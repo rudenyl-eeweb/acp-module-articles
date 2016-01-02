@@ -80,6 +80,7 @@ class ArticlesController extends BaseController
 
         $article = $this->articles->findorFail($id);
         $article->update($request->all());
+        $article->touch();
 
         return response()->json([
             'id' => $article->id,
