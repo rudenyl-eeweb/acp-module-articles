@@ -13,6 +13,17 @@ use Illuminate\Routing\Controller as BaseController;
 class ArticlesController extends BaseController
 {
     /**
+     * @var \Modules\Articles\Entities\Article
+     */
+    protected $articles;
+
+    public function __construct()
+    {
+        $this->articles = Article::withTrashed();
+    }
+
+
+    /**
      * Show all articles
      *
      * @Get("/")
@@ -20,9 +31,12 @@ class ArticlesController extends BaseController
      */
     public function index()
     {
-        $articles = Article::all();
+        $total = $this->articles->count();
+        $articles = $this->articles
+            ->take(config('articles.pagination.limit', 5))
+            ->get();
 
-        return response()->json($articles);
+        return response()->json(compact('total', 'articles'));
     }
 
     /**
@@ -64,7 +78,7 @@ class ArticlesController extends BaseController
     {
         $request->only('title', 'slug', 'summary');
 
-        $article = Article::findorFail($id);
+        $article = $this->articles->findorFail($id);
         $article->update($request->all());
 
         return response()->json([
@@ -83,13 +97,15 @@ class ArticlesController extends BaseController
      *      @Response(422, body={"error": "Error deleting article."})
      * })
      */
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
-        $article = Article::findorFail($id);
-        $article->delete();
+        $force = $request->has('force') && (int)$request->get('force');
+
+        $article = $this->articles->findorFail($id);
+        $force ? $article->forceDelete() : $article->delete();
 
         return response()->json([
-            'deleted' => true
+            ($force ? '' : 'marked_') . 'deleted' => true
         ]);
     }     
 }

@@ -1,5 +1,8 @@
 <?php
 
 return [
-	'name' => 'Articles'
+	'name' => 'Articles',
+	'pagination' => [
+		'limit' => 5
+	]
 ];
