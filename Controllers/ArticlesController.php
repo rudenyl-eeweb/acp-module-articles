@@ -40,6 +40,19 @@ class ArticlesController extends BaseController
     }
 
     /**
+     * Get article info
+     *
+     * @Get("/{id}")
+     * @Versions({"v1"})
+     */
+    public function show(Request $request, $id)
+    {
+        $article = $this->articles->findorFail($id);
+
+        return response()->json($article);
+    }
+
+    /**
      * Add an article entry
      *
      * @Post("/")
@@ -80,7 +93,8 @@ class ArticlesController extends BaseController
 
         $article = $this->articles->findorFail($id);
         $article->update($request->all());
-        $article->touch();
+
+        $article->touch(); // set updated
 
         return response()->json([
             'id' => $article->id,
