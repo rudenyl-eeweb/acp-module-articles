@@ -1,0 +1,16 @@
+{
+    "name": "Articles",
+    "alias": "Articles",
+    "title": "Articles",
+    "author": "Dhens <rudenyl.eeweb@gmail.com>",
+    "description": "Articles module for the ACP REST API server.",
+    "keywords": [],
+    "active": 1,
+    "providers": [
+        "Modules\\Articles\\ArticlesServiceProvider"
+    ],
+    "aliases": [],
+    "files": [
+        "route.php"
+    ]
+}

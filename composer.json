@@ -1,0 +1,15 @@
+{
+	"name": "rudenyl-eeweb/acp-module-articles",
+	"description": "Articles module for the ACP REST API server.",
+	"authors": [
+		{
+			"name": "Dhens",
+			"email": "rudenyl.eeweb@gmail.com"
+		}
+	],
+	"autoload": {
+		"psr-4": {
+			"Modules\\Articles\\": ""
+		}
+	}
+}
