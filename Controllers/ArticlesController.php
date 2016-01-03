@@ -47,7 +47,12 @@ class ArticlesController extends BaseController
      */
     public function show(Request $request, $id)
     {
-        return $this->articles->findorFail($id);
+        if (is_numeric($id)) {
+            return $this->articles->findorFail($id);
+        }
+        else {
+            return $this->articles->where('slug', $id)->first();
+        }
     }
 
     /**
