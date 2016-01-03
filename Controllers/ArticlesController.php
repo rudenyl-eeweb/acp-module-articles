@@ -36,7 +36,7 @@ class ArticlesController extends BaseController
             ->take(config('articles.pagination.limit', 5))
             ->get();
 
-        return response()->json(compact('total', 'articles'));
+        return compact('total', 'articles');
     }
 
     /**
@@ -47,9 +47,7 @@ class ArticlesController extends BaseController
      */
     public function show(Request $request, $id)
     {
-        $article = $this->articles->findorFail($id);
-
-        return response()->json($article);
+        return $this->articles->findorFail($id);
     }
 
     /**
@@ -69,11 +67,11 @@ class ArticlesController extends BaseController
 
         $article = Article::create($request->all());
 
-        return response()->json([
+        return [
             'id' => $article->id,
             'title' => $article->title,
             'created' => true
-        ]);
+        ];
     }     
 
     /**
@@ -96,10 +94,10 @@ class ArticlesController extends BaseController
 
         $article->touch(); // set updated
 
-        return response()->json([
+        return [
             'id' => $article->id,
             'updated' => true
-        ]);
+        ];
     }     
 
     /**
@@ -119,8 +117,8 @@ class ArticlesController extends BaseController
         $article = $this->articles->findorFail($id);
         $force ? $article->forceDelete() : $article->delete();
 
-        return response()->json([
+        return [
             ($force ? '' : 'marked_') . 'deleted' => true
-        ]);
+        ];
     }     
 }
