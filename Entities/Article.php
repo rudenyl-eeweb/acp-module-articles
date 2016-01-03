@@ -20,7 +20,7 @@ class Article extends Model
      *
      * @var array
      */
-    protected $hidden = ['last_access', 'deleted_at', 'access'];
+    protected $hidden = [];
 
     /**
      * The fillable property.

@@ -32,11 +32,11 @@ class ArticlesController extends BaseController
     public function index()
     {
         $total = $this->articles->count();
-        $articles = $this->articles
+        $rows = $this->articles
             ->take(config('articles.pagination.limit', 5))
             ->get();
 
-        return compact('total', 'articles');
+        return compact('total', 'rows');
     }
 
     /**
