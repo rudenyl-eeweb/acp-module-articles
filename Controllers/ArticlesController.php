@@ -87,17 +87,27 @@ class ArticlesController extends BaseController
      */
     public function update(Request $request, $id)
     {
-        $request->only('title', 'slug', 'summary');
-
         $article = $this->articles->findorFail($id);
-        $article->update($request->all());
 
-        $article->touch(); // set updated
+        if ($request->has('restore') && (int)$request->has('restore')) {
+            $article->restore();
 
-        return [
-            'id' => $article->id,
-            'updated' => true
-        ];
+            return [
+                'id' => $article->id,
+                'restored' => true
+            ];
+        }
+        else {
+            $request->only('title', 'slug', 'summary');
+            $article->update($request->all());
+
+            $article->touch(); // set updated
+
+            return [
+                'id' => $article->id,
+                'updated' => true
+            ];
+        }
     }     
 
     /**
