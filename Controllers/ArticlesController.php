@@ -1,8 +1,10 @@
 <?php
+
 namespace Modules\Articles\Controllers;
 
-use Modules\Articles\Entities\Article;
+use Tymon\JWTAuth\JWTAuth;
 use Dingo\Api\Http\Request;
+use Modules\Articles\Repositories\ArticleRepository;
 use Illuminate\Routing\Controller as BaseController;
 
 /**
@@ -13,15 +15,30 @@ use Illuminate\Routing\Controller as BaseController;
 class ArticlesController extends BaseController
 {
     /**
-     * @var \Modules\Articles\Entities\Article
+     * @var \Tymon\JWTAuth\JWTAuth
      */
-    protected $articles;
+    protected $auth;
 
-    public function __construct()
+    /**
+     * @var \API\Core\Entities\User
+     */
+    protected $user;
+
+    /**
+     * @var \Modules\Articles\Repositories\ArticleRepository
+     */
+    protected $repository;
+
+    public function __construct(JWTAuth $auth, ArticleRepository $repository)
     {
-        $this->articles = Article::withTrashed();
-    }
+        $this->repository = $repository;
+        $this->auth = $auth;
 
+        try {
+            $this->user = $this->auth->parseToken()->authenticate();
+        }
+        catch(\Exception $e) {}
+    }
 
     /**
      * Show all articles
@@ -29,14 +46,9 @@ class ArticlesController extends BaseController
      * @Get("/")
      * @Versions({"v1"})
      */
-    public function index()
+    public function index(Request $request)
     {
-        $total = $this->articles->count();
-        $rows = $this->articles
-            ->take(config('articles.pagination.limit', 5))
-            ->get();
-
-        return compact('total', 'rows');
+        return $this->repository->getAll();
     }
 
     /**
@@ -48,10 +60,10 @@ class ArticlesController extends BaseController
     public function show(Request $request, $id)
     {
         if (is_numeric($id)) {
-            return $this->articles->findorFail($id);
+            return $this->repository->findById($id);
         }
         else {
-            return $this->articles->where('slug', $id)->first();
+            return $this->repository->findBy('articles.slug', $id);
         }
     }
 
@@ -62,22 +74,20 @@ class ArticlesController extends BaseController
      * @Versions({"v1"})
      * @Transactions({
      *      @Request("title=Foo Bar&slug=foo-bar&summary=Foo Bar description", contentType="application/x-www-form-urlencoded")
-     *      @Response(200, body={"id": <id>, "created": true})
+     *      @Response(200, body={"id": 1, "created": true})
      *      @Response(422, body={"error": {"title": "Title already exists!"}})
      * })
      */
-    public function store(Request $request)
+    public function store()
     {
-        $request->only('title', 'slug', 'summary');
-
-        $article = Article::create($request->all());
+        $article = $this->repository->create();
 
         return [
             'id' => $article->id,
             'title' => $article->title,
             'created' => true
         ];
-    }     
+    }
 
     /**
      * Update article
@@ -86,34 +96,20 @@ class ArticlesController extends BaseController
      * @Versions({"v1"})
      * @Transactions({
      *      @Request("title=...&slug=...&summary=...", contentType="application/x-www-form-urlencoded")
-     *      @Response(200, body={"id": <id>, "updated": true})
+     *      @Response(200, body={"id": 1, "updated": true})
      *      @Response(422, body={"error": "Error updating article."})
      * })
      */
-    public function update(Request $request, $id)
+    public function update($id)
     {
-        $article = $this->articles->findorFail($id);
+        $context = 'updated';
+        $article = $this->repository->update($id, $context);
 
-        if ($request->has('restore') && (int)$request->has('restore')) {
-            $article->restore();
-
-            return [
-                'id' => $article->id,
-                'restored' => true
-            ];
-        }
-        else {
-            $request->only('title', 'slug', 'summary');
-            $article->update($request->all());
-
-            $article->touch(); // set updated
-
-            return [
-                'id' => $article->id,
-                'updated' => true
-            ];
-        }
-    }     
+        return [
+            'id' => $article->id,
+            $context => true
+        ];
+    }
 
     /**
      * Delete an article
@@ -121,19 +117,16 @@ class ArticlesController extends BaseController
      * @Delete("/{id}")
      * @Versions({"v1"})
      * @Transactions({
-     *      @Response(200, body={"id": <id>, "updated": true})
+     *      @Response(200, body={"id": 1, "updated": true})
      *      @Response(422, body={"error": "Error deleting article."})
      * })
      */
-    public function destroy(Request $request, $id)
+    public function destroy($id)
     {
-        $force = $request->has('force') && (int)$request->get('force');
-
-        $article = $this->articles->findorFail($id);
-        $force ? $article->forceDelete() : $article->delete();
+        $context = $this->repository->delete($id);
 
         return [
-            ($force ? '' : 'marked_') . 'deleted' => true
+            $context => true
         ];
-    }     
+    }
 }

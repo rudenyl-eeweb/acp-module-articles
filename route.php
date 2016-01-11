@@ -4,6 +4,11 @@
  * JWT protected routes
  */
 
+use Tymon\JWTAuth\JWTAuth;
+
+use League\Fractal;
+use Modules\Articles\Entities\Article;
+
 $api = app('api.router');
 
 $api->version('v1', ['middleware' => 'api.auth', 'providers' => 'jwt'], function ($api) {
@@ -18,14 +23,14 @@ app()->group(['prefix' => '/acp/articles', 'namespace' => 'Modules\Articles\Cont
 	$dispatcher = app('api.dispatcher');
 
 	$app->get('/', function() use ($dispatcher) {
-		$credentials = [
-			'email' => 'test@test.com',
-			'password' => 'password'
-		];
-		Auth::attempt($credentials, false, true);
+		// $credentials = [
+		// 	'email' => 'test@test.com',
+		// 	'password' => 'password'
+		// ];
+		// Auth::attempt($credentials, false, true);
 
-		$articles = $dispatcher->be(Auth::user())->get('api/articles');
+		// $articles = $dispatcher->be(Auth::user())->get('api/articles');
 
-		return view('articles::index')->with('articles', $articles);
+		// return view('articles::index')->with('articles', $articles);
 	});
 });

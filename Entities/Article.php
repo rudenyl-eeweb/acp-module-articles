@@ -1,10 +1,10 @@
 <?php
 namespace Modules\Articles\Entities;
 
-use Illuminate\Database\Eloquent\Model;
+use API\Core\Entities\ScopedModel as BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Article extends Model
+class Article extends BaseModel
 {
     use SoftDeletes;
 
@@ -27,7 +27,7 @@ class Article extends Model
      *
      * @var array
      */
-    protected $fillable = ['title', 'slug', 'summary', 'description', 'is_featured', 'ordering', 'access', 'published'];
+    protected $fillable = ['title', 'slug', 'summary', 'description', 'access', 'published'];
 
     /**
      * Softdelete attribute.
@@ -35,48 +35,4 @@ class Article extends Model
      * @var array
      */
     protected $dates = ['deleted_at'];
-
-    /**
-     * Scope "published".
-     *
-     * @param mixed $query
-     *
-     * @return mixed
-     */
-    public function scopepublished($query)
-    {
-        return $query->where('published', 1)
-            ->where(function($query) {
-                if (!auth()->check()) {
-                    $query->where('access', 0);
-                }
-            });
-    }
-
-    /**
-     * Scope "most_read".
-     *
-     * @param mixed $query
-     *
-     * @return mixed
-     */
-    public function scopemost_read($query, $limit=5)
-    {
-        return $query->where('hits', '>', 1)
-            ->orderBy('hits', 'desc')
-            ->take($limit);
-    }
-
-    /**
-     * Scope "latest".
-     *
-     * @param mixed $query
-     *
-     * @return mixed
-     */
-    public function scopelatest($query, $limit=5)
-    {
-        return $query->orderBy('created_at', 'desc')
-            ->take($limit);
-    }
 }
