@@ -72,11 +72,14 @@ class ArticleRepository implements EntityRepositoryInterface
     public function getAll()
     {
         $offset = Request::get('offset', 0);
+        $sort = Request::get('sort', 'created_at');
+        $sort_dir = Request::get('order', 'asc');
 
         $repository = $this->getModel();
 
         $total = $repository->count();
         $articles = $repository
+            ->orderBy($sort, $sort_dir)
             ->take($this->perPage())
             ->skip($offset)
             ->get();
@@ -95,7 +98,10 @@ class ArticleRepository implements EntityRepositoryInterface
         $manager = new Manager();
         $rows = $manager->createData($list)->toArray();
 
-        return compact('total') + $rows;
+        // get listing count
+        $count = count($list->getData());
+
+        return compact('total', 'count') + $rows;
     }
 
     public function search($context)
