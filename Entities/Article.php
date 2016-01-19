@@ -20,7 +20,7 @@ class Article extends BaseModel
      *
      * @var array
      */
-    protected $hidden = [];
+    protected $hidden = ['domain_id'];
 
     /**
      * The fillable property.

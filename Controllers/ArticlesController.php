@@ -3,7 +3,6 @@
 namespace Modules\Articles\Controllers;
 
 use Tymon\JWTAuth\JWTAuth;
-use Dingo\Api\Http\Request;
 use Modules\Articles\Repositories\ArticleRepository;
 use Illuminate\Routing\Controller as BaseController;
 
@@ -46,7 +45,7 @@ class ArticlesController extends BaseController
      * @Get("/")
      * @Versions({"v1"})
      */
-    public function index(Request $request)
+    public function index()
     {
         return $this->repository->getAll();
     }
@@ -57,7 +56,7 @@ class ArticlesController extends BaseController
      * @Get("/{id}")
      * @Versions({"v1"})
      */
-    public function show(Request $request, $id)
+    public function show($id)
     {
         if (is_numeric($id)) {
             return $this->repository->findById($id);

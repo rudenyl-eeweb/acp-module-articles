@@ -1,13 +1,15 @@
 <?php
-
 namespace Modules\Articles\Repositories;
 
 use League\Fractal\Manager;
 use League\Fractal\Resource\Collection;
 use League\Fractal\Resource\Item;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Request;
 use Modules\Articles\Entities\Article;
 use Modules\Articles\Repositories\ArticleDomainDataRepository;
+use Modules\Articles\Exceptions\FormValidationException;
 use API\Core\Contracts\EntityRepositoryInterface;
 
 class ArticleRepository implements EntityRepositoryInterface
@@ -23,9 +25,13 @@ class ArticleRepository implements EntityRepositoryInterface
             $data = Request::except('id');
         }
 
-        $article = Article::create($data);
+        // slug is slug
+        $data['slug'] = Str::slug( Arr::get($data, 'slug') ?: $data['title'] );
 
-        return $article;
+        // validate
+        $this->validate($data);
+
+        return Article::create($data);
     }
     
     public function update($id, &$context)
@@ -37,7 +43,13 @@ class ArticleRepository implements EntityRepositoryInterface
             $context = 'restored';
         }
         else {
-            $article->update( Request::all() );
+            // validate
+            $data = $this->validate(Request::all(), $id);
+
+            // slug is slug
+            $data['slug'] = Str::slug( Arr::get($data, 'slug') ?: $data['title'] );
+
+            $article->update($data);
             $article->touch();
         }
 
@@ -88,6 +100,7 @@ class ArticleRepository implements EntityRepositoryInterface
             return [
                 'id' => (int)$item->id,
                 'title' => $item->title,
+                'slug' => $item->slug,
                 'created_at' => (string)$item->created_at,
                 'modified_at' => (string)$item->modified_at,
                 'deleted_at' => (string)$item->deleted_at,
@@ -110,13 +123,45 @@ class ArticleRepository implements EntityRepositoryInterface
 
     public function findById($id)
     {
-        return $this->getModel()->findOrFail($id);
+        $article = $this->getModel()->find($id);
+        if (is_null($article)) {
+            throw new \Exception('article not found', 404);
+        }
+
+        return $article;
     }
 
     public function findBy($key, $value, $operator = '=')
     {
-        return $this->getModel()->where($key, $operator, $value)->firstOrFail();
+        $article = $this->getModel()->where($key, $operator, $value)->first();
+        if (is_null($article)) {
+            throw new \Exception('article_not_found', 404);
+        }
+
+        return $article;
     }
 
     public function paginate($data) {}
+
+    protected function validate($data = null, $id = null)
+    {
+        // create slug
+        if (Arr::has($data, 'slug')) {
+            $data = array_merge($data, [
+                'slug' => Str::slug($data['slug'])
+            ]);
+        }
+
+        $validator = \Validator::make($data, [
+            'title' => 'required|min:5',
+            'slug' => 'unique:articles,slug' . ($id ? ','.$id : ''),
+            'description' => 'required'
+        ]);
+
+        if ($validator->fails()) {
+            throw new FormValidationException($validator);
+        }
+
+        return $data;
+    }
 }

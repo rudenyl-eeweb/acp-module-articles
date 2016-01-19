@@ -17,7 +17,6 @@ class CreateArticlesTable extends Migration
             $table->integer('domain_id')->unsigned()->nullable();
             $table->string('title', 80)->unique();
             $table->string('slug', 80);
-            $table->text('summary');
             $table->text('description');
             $table->timestamps();
             $table->softDeletes();
