@@ -19,11 +19,6 @@ class ArticlesController extends BaseController
     protected $auth;
 
     /**
-     * @var \API\Core\Entities\User
-     */
-    protected $user;
-
-    /**
      * @var \Modules\Articles\Repositories\ArticleRepository
      */
     protected $repository;
@@ -32,11 +27,6 @@ class ArticlesController extends BaseController
     {
         $this->repository = $repository;
         $this->auth = $auth;
-
-        try {
-            $this->user = $this->auth->parseToken()->authenticate();
-        }
-        catch(\Exception $e) {}
     }
 
     /**
@@ -58,12 +48,7 @@ class ArticlesController extends BaseController
      */
     public function show($id)
     {
-        if (is_numeric($id)) {
-            return $this->repository->findById($id);
-        }
-        else {
-            return $this->repository->findBy('articles.slug', $id);
-        }
+        return $this->repository->one($id);
     }
 
     /**

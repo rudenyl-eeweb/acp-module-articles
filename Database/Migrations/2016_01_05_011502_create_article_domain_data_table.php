@@ -19,7 +19,9 @@ class CreateArticleDomainDataTable extends Migration
             $table->integer('created_by')->unsigned();
             $table->integer('modified_by')->unsigned();
             $table->timestamp('accessed_at')->nullable();
-            $table->timestamp('modified_at')->nullable();
+            $table->timestamp('updated_at')->nullable();
+            $table->timestamp('publish_up')->nullable();
+            $table->timestamp('publish_down')->nullable();
             $table->boolean('access')->nullable();
             $table->boolean('published')->nullable();
 

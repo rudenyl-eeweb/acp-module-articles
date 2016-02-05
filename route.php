@@ -23,6 +23,12 @@ app()->group(['prefix' => '/acp/articles', 'namespace' => 'Modules\Articles\Cont
 	$dispatcher = app('api.dispatcher');
 
 	$app->get('/', function() use ($dispatcher) {
+		// DB::enableQueryLog();
+
+		// echo '<pre>';
+		// print_r(DB::getQueryLog());
+		// echo '</pre>';
+
 		// $credentials = [
 		// 	'email' => 'test@test.com',
 		// 	'password' => 'password'

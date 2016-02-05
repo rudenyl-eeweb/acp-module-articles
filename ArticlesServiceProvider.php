@@ -30,7 +30,6 @@ class ArticlesServiceProvider extends ServiceProvider
 	public function register()
 	{
 		$this->registerConfig();
-		$this->registerViews();
 	}
 
 	/**
@@ -44,24 +43,6 @@ class ArticlesServiceProvider extends ServiceProvider
         if (file_exists($configPath)) {
             $this->mergeConfigFrom($configPath, 'articles');
         }
-	}
-
-	/**
-	 * Register views.
-	 * 
-	 * @return void
-	 */
-	public function registerViews()
-	{
-		$viewPath = base_path('resources/views/modules/articles');
-
-		$sourcePath = __DIR__.'/Resources/views';
-
-		$this->publishes([
-			$sourcePath => $viewPath
-		]);
-
-		$this->loadViewsFrom([$viewPath, $sourcePath], 'articles');
 	}
 
 	/**

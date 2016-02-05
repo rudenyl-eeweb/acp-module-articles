@@ -2,9 +2,9 @@
 
 namespace Modules\Articles\Entities;
 
-use Illuminate\Database\Eloquent\Model;
+use API\Core\Entities\ScopedModel as BaseModel;
 
-class ArticleDomainData extends Model
+class ArticleDomainData extends BaseModel
 {
     /**
      * Disable timestamps checking
@@ -38,29 +38,4 @@ class ArticleDomainData extends Model
      * @var array
      */
     protected $fillable = [];
-
-    /**
-     * Get article reference
-     */
-    public function article()
-    {
-        return $this->hasOne(Article::class, 'id', 'article_id')
-            ->withTrashed();
-    }
-
-    /**
-     * Get domain articles
-     */
-    public function domain_articles()
-    {
-        return $this->hasManyThrough(Article::class, $this, 'article_id', 'domain_id');
-    }
-
-    /**
-     * Get owner domain
-     */
-    public function domain()
-    {
-        return $this->belongsTo(\API\Core\Entities\Domain::class);
-    }
 }

@@ -15,13 +15,13 @@ class CreateArticlesTable extends Migration
         Schema::create('articles', function($table) {
             $table->increments('id');
             $table->integer('domain_id')->unsigned()->nullable();
-            $table->string('title', 80)->unique();
-            $table->string('slug', 80);
+            $table->string('title', 255)->unique();
+            $table->string('slug', 255);
             $table->text('description');
             $table->timestamps();
             $table->softDeletes();
-            $table->boolean('access');
-            $table->boolean('published');
+            $table->boolean('access')->nullable();
+            $table->boolean('published')->nullable();
 
             $table->foreign('domain_id')
                 ->references('id')
