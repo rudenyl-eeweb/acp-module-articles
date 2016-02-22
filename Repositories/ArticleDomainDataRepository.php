@@ -2,6 +2,7 @@
 namespace Modules\Articles\Repositories;
 
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Request;
 use Modules\Articles\Entities\ArticleDomainData;
 use API\Core\Contracts\EntityRepositoryInterface;
 
@@ -13,17 +14,19 @@ class ArticleDomainDataRepository implements EntityRepositoryInterface
             return false;
         }
 
+        // check null values
         $arr = $this->validate($data);
-        $arr['article_id'] = $data['id'];
 
-        if ($user = auth_user()) {
-            $arr = array_merge($arr, [
-                'created_by' => $user->id,
-                'modified_by' => $user->id
-            ]);
-        }
+        // get publisher id
+        $uid = Request::header('UID', 0);
 
-        return ArticleDomainData::create($arr);
+        $arr = array_merge($arr, [
+            'article_id' => $data['id'],
+            'created_by' => $uid,
+            'modified_by' => $uid
+        ]);
+
+        return ArticleDomainData::updateOrCreate(['article_id' => $data['id']], $arr);
     }
 
     public function perPage() {}
@@ -51,8 +54,45 @@ class ArticleDomainDataRepository implements EntityRepositoryInterface
         $arr = Arr::only($data, ['updated_at', 'access', 'publish_up', 'publish_down', 'published']);
 
         // check empty
-        foreach (['publish_up', 'publish_down'] as $date_field)  {
-            empty($arr[$date_field]) and $arr[$date_field] = null;
+        $fields = [
+            'publish_up' => [
+                'type' => 'datetime',
+                'value' => 'now()'
+            ],
+            'publish_down' => [
+                'type' => 'datetime',
+                'value' => null
+            ],
+            'published' => '0'
+        ];
+        foreach ($fields as $date_field => $default_value)  {
+            $type = null;
+
+            if (is_array($default_value)) {
+                // get type
+                $type = isset($default_value['type'])
+                    ? $default_value['type']
+                    : null;
+
+                $default_value = isset($default_value['value'])
+                    ? $default_value['value']
+                    : null;
+            }
+
+            if (empty($arr[$date_field])) {
+                $arr[$date_field] = $default_value;
+            }
+            else {
+                //
+                // Test for datetime
+                //
+                // in MySQL, "2016-02-16 05:30 PM" --> "0000-00-00 00:00:00"
+                // PostgreSQL seems okay ;)
+                //
+                if ($type == 'datetime' && (($value = strtotime($arr[$date_field])) !== false)) {
+                    $arr[$date_field] = date('Y-m-d H:i:s', $value);
+                }
+            }
         }
 
         return $arr;

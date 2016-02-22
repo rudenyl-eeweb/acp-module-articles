@@ -14,19 +14,13 @@ use Illuminate\Routing\Controller as BaseController;
 class ArticlesController extends BaseController
 {
     /**
-     * @var \Tymon\JWTAuth\JWTAuth
-     */
-    protected $auth;
-
-    /**
      * @var \Modules\Articles\Repositories\ArticleRepository
      */
     protected $repository;
 
-    public function __construct(JWTAuth $auth, ArticleRepository $repository)
+    public function __construct(ArticleRepository $repository)
     {
         $this->repository = $repository;
-        $this->auth = $auth;
     }
 
     /**
@@ -48,7 +42,7 @@ class ArticlesController extends BaseController
      */
     public function show($id)
     {
-        return $this->repository->one($id);
+        return $this->repository->one($id, true);
     }
 
     /**
@@ -59,6 +53,7 @@ class ArticlesController extends BaseController
      * @Transactions({
      *      @Request("title=Foo Bar&slug=foo-bar&summary=Foo Bar description", contentType="application/x-www-form-urlencoded")
      *      @Response(200, body={"id": 1, "created": true})
+     *      @Response(200, body={"source": "/articles/1"})
      *      @Response(422, body={"error": {"title": "Title already exists!"}})
      * })
      */
@@ -85,7 +80,7 @@ class ArticlesController extends BaseController
      * })
      */
     public function update($id)
-    {
+    {       
         $context = 'updated';
         $article = $this->repository->update($id, $context);
 

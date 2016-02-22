@@ -11,8 +11,8 @@ use Modules\Articles\Entities\Article;
 
 $api = app('api.router');
 
-$api->version('v1', ['middleware' => 'api.auth', 'providers' => 'jwt'], function ($api) {
-	$api->resource('/articles', Modules\Articles\Controllers\ArticlesController::class);
+$api->version('v1', ['middleware' => 'api.auth', 'providers' => 'jwt', 'namespace' => 'Modules\Articles\Controllers'], function ($api) {
+	$api->resource('/articles', ArticlesController::class);
 });
 
 
